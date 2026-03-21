@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Check, Plus, X, Loader2, Sparkles } from "lucide-react";
+import { Check, Plus, X, Loader2, Sparkles, BrainCircuit } from "lucide-react";
+import { GoogleGenAI, Type } from "@google/genai";
 
 // ─── CONFIG ───
 const SUBMIT_URL = "/api/submit-form";
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 // ─── DATA ───
 const wheelAreas = [
@@ -60,8 +62,9 @@ export default function App() {
     }, {})
   );
 
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "analyzing" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [aiAnalysis, setAiAnalysis] = useState<{ summary: string; detailed: string } | null>(null);
   const [progress, setProgress] = useState(0);
 
   // Load draft on mount
@@ -174,12 +177,74 @@ export default function App() {
       return;
     }
 
-    setStatus("loading");
+    setStatus("analyzing");
     setErrorMessage("");
+
+    // 1. Perform AI Analysis
+    let analysisResult = { summary: "", detailed: "" };
+    if (GEMINI_API_KEY) {
+      try {
+        const genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+        const model = genAI.models.generateContent({
+          model: "gemini-3-flash-preview",
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                summary: {
+                  type: Type.STRING,
+                  description: "Краткое, теплое и поддерживающее напутствие для клиента (1-2 предложения).",
+                },
+                detailed: {
+                  type: Type.STRING,
+                  description: "Профессиональный психологический анализ ответов, выделение ключевых запросов и точек роста (до 1000 знаков).",
+                },
+              },
+              required: ["summary", "detailed"],
+            },
+            systemInstruction: "Вы — опытный психолог-консультант. Ваша задача — проанализировать ответы клиента в анкете. Составьте два текста: 1) 'summary' — очень краткое, эмпатичное приветствие и поддержка для самого клиента. 2) 'detailed' — глубокий профессиональный анализ для психолога, выделяющий ключевые паттерны, запросы и потенциальные направления работы. Пишите на русском языке. Обращайтесь к клиенту по имени.",
+          },
+          contents: `Имя клиента: ${formData.name}
+          
+          Оценки Колеса Баланса:
+          ${wheelAreas.map(a => `- ${a.label}: ${formData[a.key]}/10`).join("\n")}
+          
+          Направления работы (Проблемы и Цели):
+          ${Object.keys(directionPairs).map(key => {
+            const dir = directions.find(d => d.key === key);
+            const pairs = directionPairs[key].filter((p: any) => p.problem.trim() || p.goal.trim());
+            if (pairs.length === 0) return "";
+            return `${dir?.title}:\n${pairs.map((p: any, i: number) => `  ${i+1}. Проблема: ${p.problem}\n     Цель: ${p.goal}`).join("\n")}`;
+          }).filter(Boolean).join("\n\n")}
+          
+          Дополнительно:
+          Препятствия: ${formData.obstacles}
+          Ожидания: ${formData.expectations}
+          Опыт: ${formData.past_experience}`,
+        });
+
+        const response = await model;
+        try {
+          analysisResult = JSON.parse(response.text || "{}");
+          setAiAnalysis(analysisResult);
+        } catch (e) {
+          console.error("Failed to parse AI response:", e);
+          analysisResult = { summary: "Спасибо за ваши ответы!", detailed: response.text || "" };
+          setAiAnalysis(analysisResult);
+        }
+      } catch (aiErr) {
+        console.error("AI Analysis failed:", aiErr);
+      }
+    }
+
+    setStatus("loading");
 
     // Prepare final data
     const finalData = {
       ...formData,
+      ai_analysis: analysisResult.detailed,
+      ai_summary: analysisResult.summary,
       ...Object.keys(directionPairs).reduce((acc: any, key) => {
         acc[`${key}_problem`] = directionPairs[key].map((p: any, i: number) => `${i + 1}. ${p.problem}`).join("\n");
         acc[`${key}_goal`] = directionPairs[key].map((p: any, i: number) => `${i + 1}. ${p.goal}`).join("\n");
@@ -218,14 +283,40 @@ export default function App() {
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full text-center space-y-6"
+          className="max-w-2xl w-full text-center space-y-8"
         >
           <div className="text-6xl text-[#6B4C6E]">✦</div>
-          <h2 className="font-serif text-3xl text-[#6B4C6E]">Спасибо!</h2>
-          <p className="text-[#7A6B7D] text-lg">
-            Ваша анкета отправлена. Я внимательно её изучу перед нашей встречей. С нетерпением жду нашей первой консультации.
-          </p>
-          <p className="italic text-[#8B6C8E]">— Татьяна</p>
+          <h2 className="font-serif text-4xl text-[#6B4C6E]">Спасибо, {formData.name}!</h2>
+          
+          {aiAnalysis && aiAnalysis.summary && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white border border-[#E5D5E8] p-8 rounded-2xl text-left shadow-sm relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <BrainCircuit size={80} className="text-[#6B4C6E]" />
+              </div>
+              <h3 className="font-serif text-xl text-[#6B4C6E] mb-4 flex items-center gap-2">
+                <Sparkles size={20} className="text-[#C4AACC]" />
+                Первое напутствие:
+              </h3>
+              <div className="text-[#5A4D5C] leading-relaxed whitespace-pre-wrap italic text-lg">
+                {aiAnalysis.summary}
+              </div>
+              <p className="mt-4 text-[10px] text-[#A090A1] uppercase tracking-widest text-right">
+                * Сгенерировано ИИ на основе ваших ответов
+              </p>
+            </motion.div>
+          )}
+
+          <div className="space-y-4">
+            <p className="text-[#7A6B7D] text-lg">
+              Ваша анкета отправлена. Я внимательно её изучу вместе с этим анализом перед нашей встречей.
+            </p>
+            <p className="italic text-[#8B6C8E] text-xl">— Татьяна Налётова</p>
+          </div>
         </motion.div>
       </div>
     );
@@ -554,11 +645,13 @@ export default function App() {
           <div className="pt-12 border-t border-[#E5D5E8] text-center space-y-6">
             <button 
               type="submit" 
-              disabled={status === "loading"}
+              disabled={status === "loading" || status === "analyzing"}
               className="inline-flex items-center justify-center gap-3 bg-[#6B4C6E] hover:bg-[#4E3550] text-white px-12 py-4 rounded-full font-bold text-lg transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-[#6B4C6E]/20 disabled:bg-[#C4AACC] disabled:cursor-not-allowed"
             >
-              {status === "loading" ? (
-                <Loader2 className="animate-spin" />
+              {status === "analyzing" ? (
+                <>Анализируем ответы... <BrainCircuit className="animate-pulse" /></>
+              ) : status === "loading" ? (
+                <>Отправляем... <Loader2 className="animate-spin" /></>
               ) : (
                 <>Отправить анкету <Sparkles size={18} /></>
               )}

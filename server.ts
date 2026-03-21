@@ -136,6 +136,8 @@ async function startServer() {
         "Реакции на объекты: цель": { rich_text: [{ text: { content: data.objects_goal || "" } }] },
         "Реакции на ситуации: проблема": { rich_text: [{ text: { content: data.situations_problem || "" } }] },
         "Реакции на ситуации: цель": { rich_text: [{ text: { content: data.situations_goal || "" } }] },
+        "AI Анализ": { rich_text: [{ text: { content: data.ai_analysis || "" } }] },
+        "AI Резюме": { rich_text: [{ text: { content: data.ai_summary || "" } }] },
       };
 
       await notion.pages.create({
@@ -175,12 +177,32 @@ async function startServer() {
           from: `"Татьяна Налётова" <${emailUser}>`,
           to: data.email,
           subject: "Ваша анкета получена — Копия ваших ответов",
-          text: `Здравствуйте, ${data.name}!\n\nБлагодарю вас за заполнение анкеты. Ниже приведена копия ваших ответов.\n\n${wheelText}\n\n${directionsText}\n\nС уважением,\nТатьяна Налётова`,
+          text: `Здравствуйте, ${data.name}!\n\nБлагодарю вас за заполнение анкеты. Ниже приведена копия ваших ответов.\n\n${data.ai_summary ? `ПЕРВОЕ НАПУТСТВИЕ ИИ:\n${data.ai_summary}\n\n` : ""}${data.ai_analysis ? `ПОДРОБНЫЙ РАЗБОР:\n${data.ai_analysis}\n\n` : ""}${wheelText}\n\n${directionsText}\n\nС уважением,\nТатьяна Налётова`,
           html: `
             <div style="font-family: sans-serif; color: #3A2D3C; max-width: 600px; margin: 0 auto; border: 1px solid #E5D5E8; padding: 20px; border-radius: 10px;">
               <h2 style="color: #6B4C6E;">Здравствуйте, ${data.name}!</h2>
               <p>Благодарю вас за доверие и заполнение анкеты. Ваши ответы успешно сохранены и отправлены мне для изучения.</p>
               
+              ${data.ai_summary ? `
+              <div style="background-color: #F3EBF4; padding: 20px; border-radius: 12px; border: 1px solid #C4AACC; margin: 25px 0;">
+                <h3 style="color: #6B4C6E; margin-top: 0;">
+                  ✦ Первое напутствие ИИ
+                </h3>
+                <p style="font-style: italic; color: #5A4D5C; line-height: 1.6; margin-bottom: 0; font-size: 16px;">
+                  ${data.ai_summary}
+                </p>
+              </div>
+              ` : ""}
+
+              ${data.ai_analysis ? `
+              <div style="background-color: #FDFBFD; padding: 15px; border-radius: 8px; border: 1px solid #F3EBF4; margin: 20px 0;">
+                <h4 style="color: #6B4C6E; margin-top: 0;">Подробный предварительный разбор:</h4>
+                <p style="color: #5A4D5C; line-height: 1.5; font-size: 14px;">
+                  ${data.ai_analysis}
+                </p>
+              </div>
+              ` : ""}
+
               <div style="background-color: #FDFBFD; padding: 15px; border-radius: 8px; border: 1px solid #F3EBF4; margin: 20px 0;">
                 <h3 style="color: #6B4C6E; border-bottom: 1px solid #E5D5E8; padding-bottom: 5px;">Колесо баланса</h3>
                 <pre style="white-space: pre-wrap; font-family: sans-serif; font-size: 14px; color: #5A4D5C;">${wheelText}</pre>
