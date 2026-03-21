@@ -11,6 +11,19 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Notion Client
+const notionKey = process.env.NOTION_API_KEY?.trim();
+const notion = notionKey ? new Client({ auth: notionKey }) : null;
+
+// Email Transporter
+const emailUser = process.env.EMAIL_USER;
+const emailPass = process.env.EMAIL_PASS;
+const transporter = (emailUser && emailPass) ? nodemailer.createTransport({
+  service: "gmail",
+  pool: true, // Use connection pooling
+  auth: { user: emailUser, pass: emailPass },
+}) : null;
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -26,11 +39,10 @@ async function startServer() {
 
     try {
       // 1. Save to Notion
-      const notionKey = process.env.NOTION_API_KEY?.trim();
       let databaseId = process.env.NOTION_DATABASE_ID?.trim();
 
-      if (!notionKey || !databaseId) {
-        throw new Error("Notion credentials missing in Secrets");
+      if (!notion || !databaseId) {
+        throw new Error("Настройки Notion (API Key или Database ID) не найдены в Secrets. Пожалуйста, проверьте настройки.");
       }
 
       // If a full URL was provided, extract the ID
@@ -50,9 +62,6 @@ async function startServer() {
       }
 
       console.log(`Attempting to connect to Notion Database ID: ${databaseId.substring(0, 5)}...`);
-
-      // Re-initialize notion client with trimmed key
-      const notionClient = new Client({ auth: notionKey });
 
       // Prepare Wheel of Life text
       const wheelText = `Колесо баланса:
@@ -129,7 +138,7 @@ async function startServer() {
         "Реакции на ситуации: цель": { rich_text: [{ text: { content: data.situations_goal || "" } }] },
       };
 
-      await notionClient.pages.create({
+      await notion.pages.create({
         parent: { database_id: databaseId },
         properties: properties,
         children: [
@@ -161,15 +170,7 @@ async function startServer() {
       });
 
       // 2. Send Email to Client
-      const emailUser = process.env.EMAIL_USER;
-      const emailPass = process.env.EMAIL_PASS;
-
-      if (emailUser && emailPass) {
-        const transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: { user: emailUser, pass: emailPass },
-        });
-
+      if (transporter) {
         const mailOptions = {
           from: `"Татьяна Налётова" <${emailUser}>`,
           to: data.email,
