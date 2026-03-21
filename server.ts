@@ -100,84 +100,91 @@ async function startServer() {
    Мешает: ${data.situations_problem}
    Цель: ${data.situations_goal}`;
 
-      // Prepare Notion Properties based on screenshots
-      const properties: any = {
-        "Имя": { title: [{ text: { content: data.name || "" } }] },
-        "Email": { email: data.email || null },
-        "Телефон": { phone_number: data.phone || null },
-        "Дата заполнения": { date: { start: new Date().toISOString() } },
-        "Здоровье и энергия": { number: Number(data.health) },
-        "Отношения и окружение": { number: Number(data.relationships) },
-        "Любовь и близость": { number: Number(data.love) },
-        "Работа и самореализация": { number: Number(data.work) },
-        "Финансы и ресурсы": { number: Number(data.finances) },
-        "Смысл и духовность": { number: Number(data.meaning) },
-        "Отдых и удовольствия": { number: Number(data.rest) },
-        "Личностный рост": { number: Number(data.growth) },
-        "Дополнительные наблюдения": { rich_text: [{ text: { content: data.extra_notes || "" } }] },
-        "Факторы-препятствия": { rich_text: [{ text: { content: data.obstacles || "" } }] },
-        "Ожидания от специалиста": { rich_text: [{ text: { content: data.expectations || "" } }] },
-        "Опыт с психологом": { rich_text: [{ text: { content: data.past_experience || "" } }] },
-        "Как узнали": { rich_text: [{ text: { content: data.referral_source || "" } }] },
-        "Самостоятельное решение": { checkbox: Boolean(data.self_decision) },
-        "Нет противопоказаний": { checkbox: Boolean(data.no_contraindications) },
-        "Нет зависимостей": { checkbox: Boolean(data.no_addictions) },
-        "Наблюдение у врача": { rich_text: [{ text: { content: data.doctor_note || "" } }] },
-        "Примечание о состоянии": { rich_text: [{ text: { content: data.mental_state_note || "" } }] },
-        "Поведение: проблема": { rich_text: [{ text: { content: data.behavior_problem || "" } }] },
-        "Поведение: цель": { rich_text: [{ text: { content: data.behavior_goal || "" } }] },
-        "Образ себя: проблема": { rich_text: [{ text: { content: data.self_image_problem || "" } }] },
-        "Образ себя: цель": { rich_text: [{ text: { content: data.self_image_goal || "" } }] },
-        "Убеждения: проблема": { rich_text: [{ text: { content: data.beliefs_problem || "" } }] },
-        "Убеждения: цель": { rich_text: [{ text: { content: data.beliefs_goal || "" } }] },
-        "Состояние: проблема": { rich_text: [{ text: { content: data.state_problem || "" } }] },
-        "Состояние: цель": { rich_text: [{ text: { content: data.state_goal || "" } }] },
-        "Реакции на объекты: проблема": { rich_text: [{ text: { content: data.objects_problem || "" } }] },
-        "Реакции на объекты: цель": { rich_text: [{ text: { content: data.objects_goal || "" } }] },
-        "Реакции на ситуации: проблема": { rich_text: [{ text: { content: data.situations_problem || "" } }] },
-        "Реакции на ситуации: цель": { rich_text: [{ text: { content: data.situations_goal || "" } }] },
-        "AI Анализ": { rich_text: [{ text: { content: data.ai_analysis || "" } }] },
-        "AI Резюме": { rich_text: [{ text: { content: data.ai_summary || "" } }] },
-      };
+      // 1. Save to Notion (Wrapped in try-catch to not block email)
+      try {
+        const properties: any = {
+          "Имя": { title: [{ text: { content: data.name || "" } }] },
+          "Email": { email: data.email || null },
+          "Телефон": { phone_number: data.phone || null },
+          "Дата заполнения": { date: { start: new Date().toISOString() } },
+          "Здоровье и энергия": { number: Number(data.health) },
+          "Отношения и окружение": { number: Number(data.relationships) },
+          "Любовь и близость": { number: Number(data.love) },
+          "Работа и самореализация": { number: Number(data.work) },
+          "Финансы и ресурсы": { number: Number(data.finances) },
+          "Смысл и духовность": { number: Number(data.meaning) },
+          "Отдых и удовольствия": { number: Number(data.rest) },
+          "Личностный рост": { number: Number(data.growth) },
+          "Дополнительные наблюдения": { rich_text: [{ text: { content: data.extra_notes || "" } }] },
+          "Факторы-препятствия": { rich_text: [{ text: { content: data.obstacles || "" } }] },
+          "Ожидания от специалиста": { rich_text: [{ text: { content: data.expectations || "" } }] },
+          "Опыт с психологом": { rich_text: [{ text: { content: data.past_experience || "" } }] },
+          "Как узнали": { rich_text: [{ text: { content: data.referral_source || "" } }] },
+          "Самостоятельное решение": { checkbox: Boolean(data.self_decision) },
+          "Нет противопоказаний": { checkbox: Boolean(data.no_contraindications) },
+          "Нет зависимостей": { checkbox: Boolean(data.no_addictions) },
+          "Наблюдение у врача": { rich_text: [{ text: { content: data.doctor_note || "" } }] },
+          "Примечание о состоянии": { rich_text: [{ text: { content: data.mental_state_note || "" } }] },
+          "Поведение: проблема": { rich_text: [{ text: { content: data.behavior_problem || "" } }] },
+          "Поведение: цель": { rich_text: [{ text: { content: data.behavior_goal || "" } }] },
+          "Образ себя: проблема": { rich_text: [{ text: { content: data.self_image_problem || "" } }] },
+          "Образ себя: цель": { rich_text: [{ text: { content: data.self_image_goal || "" } }] },
+          "Убеждения: проблема": { rich_text: [{ text: { content: data.beliefs_problem || "" } }] },
+          "Убеждения: цель": { rich_text: [{ text: { content: data.beliefs_goal || "" } }] },
+          "Состояние: проблема": { rich_text: [{ text: { content: data.state_problem || "" } }] },
+          "Состояние: цель": { rich_text: [{ text: { content: data.state_goal || "" } }] },
+          "Реакции на объекты: проблема": { rich_text: [{ text: { content: data.objects_problem || "" } }] },
+          "Реакции на объекты: цель": { rich_text: [{ text: { content: data.objects_goal || "" } }] },
+          "Реакции на ситуации: проблема": { rich_text: [{ text: { content: data.situations_problem || "" } }] },
+          "Реакции на ситуации: цель": { rich_text: [{ text: { content: data.situations_goal || "" } }] },
+          "AI Анализ": { rich_text: [{ text: { content: data.ai_analysis || "" } }] },
+          "AI Резюме": { rich_text: [{ text: { content: data.ai_summary || "" } }] },
+        };
 
-      await notion.pages.create({
-        parent: { database_id: databaseId },
-        properties: properties,
-        children: [
-          {
-            object: "block",
-            type: "heading_2",
-            heading_2: { rich_text: [{ text: { content: "Результаты анкеты" } }] },
-          },
-          {
-            object: "block",
-            type: "paragraph",
-            paragraph: {
-              rich_text: [{ text: { content: wheelText } }],
+        await notion.pages.create({
+          parent: { database_id: databaseId },
+          properties: properties,
+          children: [
+            {
+              object: "block",
+              type: "heading_2",
+              heading_2: { rich_text: [{ text: { content: "Результаты анкеты" } }] },
             },
-          },
-          {
-            object: "block",
-            type: "divider",
-            divider: {},
-          },
-          {
-            object: "block",
-            type: "paragraph",
-            paragraph: {
-              rich_text: [{ text: { content: directionsText } }],
+            {
+              object: "block",
+              type: "paragraph",
+              paragraph: {
+                rich_text: [{ text: { content: wheelText } }],
+              },
             },
-          },
-        ],
-      });
+            {
+              object: "block",
+              type: "divider",
+              divider: {},
+            },
+            {
+              object: "block",
+              type: "paragraph",
+              paragraph: {
+                rich_text: [{ text: { content: directionsText } }],
+              },
+            },
+          ],
+        });
+        console.log("Successfully saved to Notion");
+      } catch (notionError: any) {
+        console.error("Notion Error details:", notionError.body || notionError);
+        // We don't throw here, so email can still be sent
+        // But we can inform the client that Notion failed if we want
+      }
 
-      // 2. Send Email to Client
+      // 2. Send Email to Client (ONLY summary, NO detailed analysis)
       if (transporter) {
-        const mailOptions = {
+        const clientMailOptions = {
           from: `"Татьяна Налётова" <${emailUser}>`,
           to: data.email,
           subject: "Ваша анкета получена — Копия ваших ответов",
-          text: `Здравствуйте, ${data.name}!\n\nБлагодарю вас за заполнение анкеты. Ниже приведена копия ваших ответов.\n\n${data.ai_summary ? `ПЕРВОЕ НАПУТСТВИЕ ИИ:\n${data.ai_summary}\n\n` : ""}${data.ai_analysis ? `ПОДРОБНЫЙ РАЗБОР:\n${data.ai_analysis}\n\n` : ""}${wheelText}\n\n${directionsText}\n\nС уважением,\nТатьяна Налётова`,
+          text: `Здравствуйте, ${data.name}!\n\nБлагодарю вас за заполнение анкеты. Ниже приведена копия ваших ответов.\n\n${data.ai_summary ? `ПЕРВОЕ НАПУТСТВИЕ ИИ:\n${data.ai_summary}\n\n` : ""}${wheelText}\n\n${directionsText}\n\nС уважением,\nТатьяна Налётова`,
           html: `
             <div style="font-family: sans-serif; color: #3A2D3C; max-width: 600px; margin: 0 auto; border: 1px solid #E5D5E8; padding: 20px; border-radius: 10px;">
               <h2 style="color: #6B4C6E;">Здравствуйте, ${data.name}!</h2>
@@ -190,15 +197,6 @@ async function startServer() {
                 </h3>
                 <p style="font-style: italic; color: #5A4D5C; line-height: 1.6; margin-bottom: 0; font-size: 16px;">
                   ${data.ai_summary}
-                </p>
-              </div>
-              ` : ""}
-
-              ${data.ai_analysis ? `
-              <div style="background-color: #FDFBFD; padding: 15px; border-radius: 8px; border: 1px solid #F3EBF4; margin: 20px 0;">
-                <h4 style="color: #6B4C6E; margin-top: 0;">Подробный предварительный разбор:</h4>
-                <p style="color: #5A4D5C; line-height: 1.5; font-size: 14px;">
-                  ${data.ai_analysis}
                 </p>
               </div>
               ` : ""}
@@ -220,8 +218,57 @@ async function startServer() {
           `,
         };
 
-        await transporter.sendMail(mailOptions);
-        console.log("Confirmation email sent to:", data.email);
+        // 3. Send Full Report to Therapist (YOU)
+        const therapistMailOptions = {
+          from: `"Система Анкет" <${emailUser}>`,
+          to: "es.nalyotova@gmail.com",
+          subject: `Новая анкета: ${data.name}`,
+          text: `Новая анкета от ${data.name} (${data.email})\n\nПОДРОБНЫЙ АНАЛИЗ ИИ:\n${data.ai_analysis}\n\nРЕЗЮМЕ ДЛЯ КЛИЕНТА:\n${data.ai_summary}\n\n${wheelText}\n\n${directionsText}`,
+          html: `
+            <div style="font-family: sans-serif; color: #3A2D3C; max-width: 800px; margin: 0 auto; border: 2px solid #6B4C6E; padding: 30px; border-radius: 15px;">
+              <h2 style="color: #6B4C6E; border-bottom: 2px solid #6B4C6E; padding-bottom: 10px;">Новая анкета: ${data.name}</h2>
+              
+              <div style="background-color: #F5E8EA; padding: 20px; border-radius: 12px; border: 1px solid #D4A0A8; margin: 25px 0;">
+                <h3 style="color: #C45B5B; margin-top: 0;">🧠 ПОДРОБНЫЙ АНАЛИЗ ИИ (Только для вас):</h3>
+                <p style="color: #3A2D3C; line-height: 1.6; font-size: 16px;">
+                  ${data.ai_analysis}
+                </p>
+              </div>
+
+              <div style="background-color: #F3EBF4; padding: 20px; border-radius: 12px; border: 1px solid #C4AACC; margin: 25px 0;">
+                <h3 style="color: #6B4C6E; margin-top: 0;">✦ Резюме, которое увидел клиент:</h3>
+                <p style="font-style: italic; color: #5A4D5C; line-height: 1.6;">
+                  ${data.ai_summary}
+                </p>
+              </div>
+
+              <h3 style="color: #6B4C6E;">Данные клиента:</h3>
+              <p><strong>Email:</strong> ${data.email}</p>
+              <p><strong>Телефон:</strong> ${data.phone || "не указан"}</p>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div style="background-color: #FDFBFD; padding: 15px; border-radius: 8px; border: 1px solid #F3EBF4;">
+                  <h4 style="color: #6B4C6E; margin-top: 0;">Колесо баланса</h4>
+                  <pre style="white-space: pre-wrap; font-family: sans-serif; font-size: 13px;">${wheelText}</pre>
+                </div>
+                <div style="background-color: #FDFBFD; padding: 15px; border-radius: 8px; border: 1px solid #F3EBF4;">
+                  <h4 style="color: #6B4C6E; margin-top: 0;">Направления</h4>
+                  <pre style="white-space: pre-wrap; font-family: sans-serif; font-size: 13px;">${directionsText}</pre>
+                </div>
+              </div>
+
+              <div style="margin-top: 20px; padding: 15px; background: #eee; border-radius: 8px;">
+                <p><strong>Препятствия:</strong> ${data.obstacles}</p>
+                <p><strong>Ожидания:</strong> ${data.expectations}</p>
+                <p><strong>Опыт:</strong> ${data.past_experience}</p>
+              </div>
+            </div>
+          `,
+        };
+
+        await transporter.sendMail(clientMailOptions);
+        await transporter.sendMail(therapistMailOptions);
+        console.log("Emails sent to client and therapist");
       }
 
       res.status(200).json({ message: "Success" });

@@ -5,7 +5,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 // ─── CONFIG ───
 const SUBMIT_URL = "/api/submit-form";
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 // ─── DATA ───
 const wheelAreas = [
@@ -203,7 +203,7 @@ export default function App() {
               },
               required: ["summary", "detailed"],
             },
-            systemInstruction: "Вы — опытный психолог-консультант. Ваша задача — проанализировать ответы клиента в анкете. Составьте два текста: 1) 'summary' — очень краткое, эмпатичное приветствие и поддержка для самого клиента. 2) 'detailed' — глубокий профессиональный анализ для психолога, выделяющий ключевые паттерны, запросы и потенциальные направления работы. Пишите на русском языке. Обращайтесь к клиенту по имени.",
+            systemInstruction: "Вы — опытный психолог-консультант. Ваша задача — проанализировать ответы клиента в анкете. Составьте два текста: 1) 'summary' — ЭТО ТЕКСТ ДЛЯ КЛИЕНТА. Он должен быть очень кратким (1-2 предложения), теплым, эмпатичным и поддерживающим. НИКАКИХ ДИАГНОЗОВ ИЛИ ГЛУБОКОГО АНАЛИЗА ЗДЕСЬ. 2) 'detailed' — ЭТО ТЕКСТ ТОЛЬКО ДЛЯ ПСИХОЛОГА (для вас). Здесь должен быть глубокий профессиональный анализ, выделение паттернов, скрытых запросов и рекомендации по работе. Пишите на русском языке. Обращайтесь к клиенту по имени.",
           },
           contents: `Имя клиента: ${formData.name}
           
@@ -225,12 +225,23 @@ export default function App() {
         });
 
         const response = await model;
+        const text = response.text || "";
         try {
-          analysisResult = JSON.parse(response.text || "{}");
+          // Try to extract JSON if it's wrapped in markdown code blocks
+          const jsonMatch = text.match(/\{[\s\S]*\}/);
+          const jsonStr = jsonMatch ? jsonMatch[0] : text;
+          const parsed = JSON.parse(jsonStr);
+          analysisResult = {
+            summary: parsed.summary || "Спасибо за ваши ответы! Я внимательно их изучу.",
+            detailed: parsed.detailed || text,
+          };
           setAiAnalysis(analysisResult);
         } catch (e) {
           console.error("Failed to parse AI response:", e);
-          analysisResult = { summary: "Спасибо за ваши ответы!", detailed: response.text || "" };
+          analysisResult = { 
+            summary: "Спасибо за ваши ответы! Я внимательно их изучу перед нашей встречей.", 
+            detailed: text || "Анализ не удалось сформировать автоматически." 
+          };
           setAiAnalysis(analysisResult);
         }
       } catch (aiErr) {
@@ -305,6 +316,7 @@ export default function App() {
               <div className="text-[#5A4D5C] leading-relaxed whitespace-pre-wrap italic text-lg">
                 {aiAnalysis.summary}
               </div>
+              {/* ПОДРОБНЫЙ АНАЛИЗ (aiAnalysis.detailed) ЗДЕСЬ НЕ ВЫВОДИТСЯ, ОН ТОЛЬКО ДЛЯ NOTION */}
               <p className="mt-4 text-[10px] text-[#A090A1] uppercase tracking-widest text-right">
                 * Сгенерировано ИИ на основе ваших ответов
               </p>
