@@ -1,5 +1,5 @@
 {
-  "name": "Анкета Татьяны Налётовой",
-  "description": "Форма подготовки к психологической консультации с интеграцией в Notion и Email",
+  "name": "Anketa-form",
+  "description": "AI-powered intake questionnaire for therapists with Notion integration, automated analysis, and email notifications.",
   "requestFramePermissions": []
 }
