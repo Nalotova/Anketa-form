@@ -1,187 +1,128 @@
-# Psychological Consultation Intake Form
+# Psychological Consultation Intake Form / Анкета для подготовки к консультации
 
-A full-stack intake form for preparing first psychological consultations. The app collects structured client context, generates an AI-assisted preliminary analysis, saves the submission to Notion, and sends separate email reports to the client and therapist.
+[English](#english) | [Русский](#russian)
 
-This project was built as a practical automation tool for a private consulting workflow: reduce manual preparation time, preserve sensitive context in an organized system, and give clients a calm, guided way to reflect before the first session.
+---
 
-## Project Highlights
+<a name="english"></a>
+## 🇬🇧 English Version
 
-- Real-world client intake workflow for psychological consultations
-- Multi-step interactive form with progress tracking and draft saving
-- AI-generated client summary and therapist-only professional analysis
-- Notion database integration for structured case management
-- Automated email notifications via Gmail/Nodemailer
-- Responsive React interface with thoughtful UX for sensitive personal data
+Interactive web questionnaire for data collection before the first psychological session. The system automatically analyzes responses using AI (Gemini), saves data to Notion, and sends email notifications.
 
-## Features
+### 🌟 Key Features
 
-### Guided Intake Experience
+*   **Interactive "Wheel of Life"**: Visual assessment of 8 key life areas.
+*   **Deep Direction Analysis**: Collection of "Problem — Goal" pairs across 6 psychological vectors (Behavior, Self-image, Beliefs, etc.).
+*   **AI-Powered Analysis**:
+    *   **For the Client**: Brief, warm, and supportive message immediately after submission.
+    *   **For the Therapist**: Deep professional breakdown of patterns and hidden requests (sent only to you).
+*   **Notion Integration**: Automatic creation of a new database row with all responses and analysis.
+*   **Email Notifications**:
+    *   **To Client**: Copy of their responses and AI support message.
+    *   **To Therapist**: Full report with professional AI analysis.
+*   **Draft Saving**: Data is saved in the browser (LocalStorage) to prevent loss on accidental refresh.
 
-The form helps a client describe their current situation before the first consultation. It includes:
+### 🛠 Tech Stack
 
-- Contact details and consent-related checks
-- A "Wheel of Life" assessment across 8 life areas
-- Problem-to-goal mapping across 6 psychological directions
-- Open questions about obstacles, expectations, previous experience, and referral source
-- Auto-saved drafts in LocalStorage to prevent accidental data loss
-- Submission status states for analyzing, loading, success, and errors
+*   **Frontend**: React, TypeScript, Tailwind CSS, Framer Motion, Lucide React.
+*   **Backend**: Node.js (Express).
+*   **AI**: Google Gemini API (`gemini-3-flash-preview`).
+*   **Database**: Notion API.
+*   **Email**: Nodemailer (via Gmail App Passwords).
 
-### AI-Assisted Analysis
+### ⚙️ Environment Variables
 
-The app uses Google Gemini to generate two different outputs from the same intake data:
+To run the project, configure the following variables in **Settings -> Secrets**:
 
-- A short, warm summary shown to the client after submission
-- A deeper therapist-only analysis for preparation before the first session
+| Variable | Description |
+| :--- | :--- |
+| `GEMINI_API_KEY` | Google AI Studio API key (for response analysis). |
+| `NOTION_API_KEY` | Notion Internal Integration Token. |
+| `NOTION_DATABASE_ID` | Your Notion Database ID. |
+| `EMAIL_USER` | Your Gmail address (sender). |
+| `EMAIL_PASS` | Gmail App Password. |
 
-The detailed analysis is intentionally not displayed to the client in the UI.
+### 📋 Notion Setup
 
-### Notion CRM-Style Storage
+1. Create a database in Notion.
+2. Add columns with the following types (names must match):
+    * `Имя` (Title)
+    * `Email` (Email)
+    * `AI Анализ` (Rich Text) — for deep analysis.
+    * `AI Резюме` (Rich Text) — for client summary.
+    * `Здоровье и энергия` (Number) ... and other Wheel areas.
+3. Create an integration at [developers.notion.com](https://developers.notion.com) and grant it access to this database.
 
-On submission, the backend creates a new Notion database entry with:
+### 📧 Email Setup (Gmail)
 
-- Client contact data
-- Wheel of Life scores
-- Problem and goal pairs
-- Open-question answers
-- AI summary and detailed analysis
-- Timestamped submission metadata
+1. Enable 2FA in your Google account.
+2. Create an "App Password" in Google security settings.
+3. Use this 16-character code in the `EMAIL_PASS` variable.
 
-### Email Automation
+### 📄 License
 
-The server sends two types of emails:
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
 
-- Client email: confirmation, copy of answers, and supportive AI summary
-- Therapist email: full intake report with detailed AI analysis
+---
 
-## Tech Stack
+<a name="russian"></a>
+## 🇷🇺 Русская версия
 
-| Area | Technologies |
-| --- | --- |
-| Frontend | React 19, TypeScript, Vite |
-| Styling and UI | Tailwind CSS, Motion, Lucide React |
-| Backend | Node.js, Express |
-| AI | Google Gemini API via `@google/genai` |
-| Storage | Notion API |
-| Email | Nodemailer with Gmail App Passwords |
-| Tooling | TypeScript, Vite, tsx |
+Интерактивная веб-анкета для сбора данных перед первой психологической сессией. Система автоматически анализирует ответы с помощью ИИ (Gemini), сохраняет данные в Notion и отправляет уведомления на почту.
 
-## Architecture
+### 🌟 Основные возможности
 
-```text
-Client Browser
-  |
-  | React intake form
-  | LocalStorage draft saving
-  | Gemini-powered preliminary analysis
-  v
-Express API: /api/submit-form
-  |
-  |-- Notion API: stores structured consultation record
-  |
-  |-- Nodemailer/Gmail: sends client confirmation
-  |
-  |-- Nodemailer/Gmail: sends therapist report
-```
+*   **Интерактивное «Колесо баланса»**: Визуальная оценка 8 ключевых сфер жизни.
+*   **Глубокий анализ направлений**: Сбор пар «Проблема — Цель» по 6 психологическим векторам (Поведение, Образ себя, Убеждения и др.).
+*   **Интеллектуальный анализ (AI)**:
+    *   **Для клиента**: Краткое, теплое и поддерживающее напутствие сразу после отправки.
+    *   **Для психолога**: Глубокий профессиональный разбор паттернов и скрытых запросов (приходит только вам).
+*   **Интеграция с Notion**: Автоматическое создание новой строки в базе данных со всеми ответами и анализом.
+*   **Email-уведомления**:
+    *   **Клиенту**: Копия его ответов и напутствие от ИИ.
+    *   **Психологу**: Полный отчет с профессиональным анализом ИИ.
+*   **Сохранение черновиков**: Данные сохраняются в браузере (LocalStorage), чтобы клиент не потерял их при случайной перезагрузке.
 
-## What I Built
+### 🛠 Технический стек
 
-- Designed the full intake flow and data model for a sensitive consulting use case
-- Implemented a responsive React form with dynamic sections, sliders, repeatable problem-goal pairs, and progress tracking
-- Integrated Gemini structured output for separate client-facing and therapist-facing AI summaries
-- Built an Express submission endpoint that saves structured records to Notion
-- Implemented automated email reporting with different content for client and therapist
-- Added browser draft persistence and user-friendly success/error states
+*   **Frontend**: React, TypeScript, Tailwind CSS, Framer Motion (анимации), Lucide React (иконки).
+*   **Backend**: Node.js (Express).
+*   **AI**: Google Gemini API (`gemini-3-flash-preview`).
+*   **Database**: Notion API.
+*   **Email**: Nodemailer (через Gmail App Passwords).
 
-## Why This Project Matters
+### ⚙️ Настройка окружения (Environment Variables)
 
-The project demonstrates the ability to connect product thinking with implementation. It is not only a form: it is an operational workflow that combines UX, AI, database automation, and email delivery around a real professional process.
+Для работы проекта необходимо настроить следующие переменные в разделе **Settings -> Secrets**:
 
-For recruiters, this project shows experience with:
+| Переменная | Описание |
+| :--- | :--- |
+| `GEMINI_API_KEY` | API ключ от Google AI Studio (для анализа ответов). |
+| `NOTION_API_KEY` | Internal Integration Token от Notion. |
+| `NOTION_DATABASE_ID` | ID вашей базы данных в Notion. |
+| `EMAIL_USER` | Ваш Gmail адрес (от которого будут уходить письма). |
+| `EMAIL_PASS` | Пароль приложения Gmail (App Password). |
 
-- Building end-to-end web applications
-- Working with third-party APIs and external services
-- Designing user flows for real business needs
-- Handling asynchronous workflows and error states
-- Structuring AI output for practical use
-- Thinking about privacy and role-based information visibility
+### 📋 Настройка Notion
 
-## Getting Started
+1. Создайте базу данных в Notion.
+2. Добавьте колонки со следующими типами (названия должны совпадать):
+   * `Имя` (Title)
+   * `Email` (Email)
+   * `AI Анализ` (Rich Text) — для глубокого разбора.
+   * `AI Резюме` (Rich Text) — для напутствия клиенту.
+   * `Здоровье и энергия` (Number) ... и остальные сферы Колеса.
+3. Создайте интеграцию на [developers.notion.com](https://developers.notion.com) и дайте ей доступ к этой базе данных.
 
-### Prerequisites
+### 📧 Настройка почты (Gmail)
 
-- Node.js 18+
-- A Google Gemini API key
-- A Notion integration and database
-- A Gmail account with an App Password for Nodemailer
+1. Включите 2FA в вашем Google аккаунте.
+2. Создайте «Пароль приложения» (App Password) в настройках безопасности Google.
+3. Используйте этот 16-значный код в переменной `EMAIL_PASS`.
 
-### Installation
+### 📄 Лицензия
 
-```bash
-npm install
-```
+Этот проект распространяется под лицензией MIT. Подробности см. в файле [LICENSE](./LICENSE).
 
-### Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-GEMINI_API_KEY=your_gemini_api_key
-NOTION_API_KEY=your_notion_internal_integration_token
-NOTION_DATABASE_ID=your_notion_database_id
-EMAIL_USER=your_gmail_address
-EMAIL_PASS=your_gmail_app_password
-```
-
-### Run Locally
-
-```bash
-npm run dev
-```
-
-The app runs with the Express server and Vite development environment.
-
-### Build
-
-```bash
-npm run build
-```
-
-### Type Check
-
-```bash
-npm run lint
-```
-
-## Notion Database Requirements
-
-The Notion database should contain properties for client identity, contact information, Wheel of Life scores, intake answers, and AI analysis fields. The backend expects property names that match the current implementation.
-
-Key fields include:
-
-- Name/title
-- Email
-- Phone
-- Submission date
-- 8 numeric Wheel of Life scores
-- Problem/goal text fields for each direction
-- AI client summary
-- AI therapist analysis
-
-## Privacy Notes
-
-This repository does not include API keys, credentials, or real client submissions. Sensitive values must be provided through environment variables.
-
-Because the product handles personal psychological information, any production deployment should also include explicit consent language, secure hosting, access control, and a clear data-retention policy.
-
-## Roadmap
-
-- Add a public demo mode with mocked submission data
-- Add screenshots and a short product walkthrough
-- Move AI analysis fully server-side to avoid exposing API keys in the client bundle
-- Add automated tests for validation and submission flows
-- Improve Notion schema validation and setup documentation
-- Add deployment documentation for a production environment
-
-## License
-
-MIT License. See [LICENSE](./LICENSE) for details.
+---
+*Developed specifically for Tatiana Nalyotova's private practice / Разработано специально для частной практики Татьяны Налётовой.*
